@@ -2,4 +2,4 @@ build:
 	meson compile -C builddir
 
 run:
-	cd builddir && ninja && cd .. && ./builddir/aoc-1
+	meson compile -C builddir && ./builddir/aoc
