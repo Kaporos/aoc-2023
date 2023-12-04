@@ -126,9 +126,9 @@ int main() {
   }
   for (int i = 0; i < lines; i++) {
     std::getline(nameFileout2, line);
+    int count = part2(line);
     for (int j = 0; j < count_tables[i]; j++)
     {
-      int count = part2(line);
       for (int k = i+1; k < i+count+1; k++) {
         count_tables[k] += 1;
       }
