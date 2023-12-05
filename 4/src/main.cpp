@@ -15,7 +15,7 @@ int ctoi(char carac) {
 
 
 int get_count(std::string cardLine) {
-  cardLine += " ";
+  cardLine += " "; //to simplify below code, little bit ugly but it works so...
   int size = cardLine.size();
   int id = 0;
   int count = 0;
@@ -34,7 +34,7 @@ int get_count(std::string cardLine) {
       currentNumber = "";
       continue;
     }
-    if ((cardLine[i] == ' ' || cardLine[i] == '\n') && currentNumber.size() > 0) {
+    if ((cardLine[i] == ' ') && currentNumber.size() > 0) {
       value = std::stoi(currentNumber);
       currentNumber = "";
     } else {
@@ -86,7 +86,7 @@ int main() {
     lines += 1;
   }
   nameFileout2.clear();
-  nameFileout2.seekg(0);
+  nameFileout2.seekg(0);//getting back to start of the file
   std::unordered_map<int, int> count_tables;
   for (int i = 0; i < lines; i++) {
     count_tables[i] = 1;
