@@ -12,14 +12,9 @@ struct range {
   long int destination_start;
   long int source_start;
   long int length;
-
-  
-  bool operator<(const range& a) const
-  {
-      return destination_start < a.destination_start;
-  }
 };
 
+//Simple function to read file content
 inline std::string slurp (const std::string& path) {
   std::ostringstream buf; 
   std::ifstream input (path.c_str()); 
@@ -27,6 +22,7 @@ inline std::string slurp (const std::string& path) {
   return buf.str();
 }
 
+//Convert a char of number to int 
 int ctoi(char carac) {
   int number = carac - '0';
   if (number >= 0 && number <= 9)
@@ -34,6 +30,7 @@ int ctoi(char carac) {
   return -1;
 }
 
+//return a vector of all number in a string
 std::vector<long int> split_and_parse(std::string string) {
   std::string current;
   std::vector<long int> result;
@@ -72,15 +69,8 @@ std::vector<std::string> split(std::string content, char delimiter) {
   return result;
 }
 
-int part1(std::string content) {
-  int firstLineLength = content.find('\n');
-  //getting seeds first
-  std::vector<long int> seeds = split_and_parse(content.substr(7, firstLineLength-7));
 
-  content = content.substr(firstLineLength+2, content.size()-firstLineLength-2); //removing seeds from content !
-  //std::vector<long int> seeds{3737494864};
-  
-  //First, we have to read all ranges from data.
+std::vector<std::vector<range>> get_ranges(std::string content) {
   std::vector<std::vector<range>> ranges;
   std::vector<std::string> lines = split(content, '\n');
 
@@ -104,13 +94,23 @@ int part1(std::string content) {
     range currentRange{numbers[0], numbers[1], numbers[2]};
     ranges[currentType].push_back(currentRange);
   }
+  return ranges;
+}
+
+int part1(std::string content) {
+  int firstLineLength = content.find('\n');
+  //getting seeds first
+  std::vector<long int> seeds = split_and_parse(content.substr(7, firstLineLength-7));
+
+  content = content.substr(firstLineLength+2, content.size()-firstLineLength-2); //removing seeds from content !
+  
+  //First, we have to read all ranges from data.
+  auto ranges = get_ranges(content);
 
   long int min = 10000000000;
-  long int min_seed = 0;
   //iterating over seeds
   for (lint i = 0; i < seeds.size(); i++) {
     long int value = seeds[i];
-    long int initial = value;
     for (lint j = 0; j < ranges.size(); j ++) {
       std::vector<range> currTypeRanges = ranges[j];
       for (lint k = 0; k < currTypeRanges.size(); k++) {
@@ -123,11 +123,9 @@ int part1(std::string content) {
     }
     if (value < min) {
       min = value;
-      min_seed = initial;
       break;
     }
   }
-  std::cout << min_seed << " is the seed of " << min << std::endl;
   return min;
 }
 
@@ -139,36 +137,13 @@ long int part2(std::string content) {
   content = content.substr(firstLineLength+2, content.size()-firstLineLength-2); //removing seeds from content !
   
   //First, we have to read all ranges from data.
-  std::vector<std::vector<range>> ranges;
-  std::vector<std::string> lines = split(content, '\n');
-
-  int currentType = 0;
-  bool justUpdated = false;
-  ranges.push_back(std::vector<range>());
-  
-  for (long unsigned int i = 0; i < lines.size(); i ++)
-  {
-    std::vector<long int> numbers = split_and_parse(lines[i]);
-    if (numbers.size() == 0) {
-      if (justUpdated) {
-        continue;
-      }
-      currentType += 1;
-      justUpdated = true;
-      ranges.push_back(std::vector<range>());
-      continue;
-    }
-    justUpdated = false;
-    range currentRange{numbers[0], numbers[1], numbers[2]};
-    ranges[currentType].push_back(currentRange);
-  }
-
+  auto ranges = get_ranges(content);
   //iterating FROM locations to seeds
 
   
   int locationsIndex = ranges.size()-1;
-  std::sort(ranges[locationsIndex].begin(), ranges[locationsIndex].end()); //sorting locations ranges from lowest to highest.
 
+  //while(true) not elegant but who cares, because we know there is a solution :D
   int loc = 0;
   while (true) 
   {
@@ -186,7 +161,6 @@ long int part2(std::string content) {
 
     for (lint a = 0; a < seeds.size(); a+=2) {
       if (value >= seeds[a] && value < seeds[a]+seeds[a+1]) {
-        std::cout << "just found seed " << value << " that gets position: " << loc << std::endl;
         return loc;
       }
     }
