@@ -12,6 +12,12 @@ struct range {
   long int destination_start;
   long int source_start;
   long int length;
+
+  
+  bool operator<(const range& a) const
+  {
+      return destination_start < a.destination_start;
+  }
 };
 
 inline std::string slurp (const std::string& path) {
@@ -72,6 +78,7 @@ int part1(std::string content) {
   std::vector<long int> seeds = split_and_parse(content.substr(7, firstLineLength-7));
 
   content = content.substr(firstLineLength+2, content.size()-firstLineLength-2); //removing seeds from content !
+  //std::vector<long int> seeds{3737494864};
   
   //First, we have to read all ranges from data.
   std::vector<std::vector<range>> ranges;
@@ -99,15 +106,16 @@ int part1(std::string content) {
   }
 
   long int min = 10000000000;
+  long int min_seed = 0;
   //iterating over seeds
-  for (int i = 0; i < seeds.size(); i++) {
+  for (lint i = 0; i < seeds.size(); i++) {
     long int value = seeds[i];
-    for (int j = 0; j < ranges.size(); j ++) {
+    long int initial = value;
+    for (lint j = 0; j < ranges.size(); j ++) {
       std::vector<range> currTypeRanges = ranges[j];
-      for (int k = 0; k < currTypeRanges.size(); k++) {
+      for (lint k = 0; k < currTypeRanges.size(); k++) {
         range current = currTypeRanges[k];
         if (value >= current.source_start && value <= current.source_start+current.length){
-          //good range
           value = current.destination_start + (value - current.source_start);
           break;
         }
@@ -115,23 +123,88 @@ int part1(std::string content) {
     }
     if (value < min) {
       min = value;
+      min_seed = initial;
+      break;
     }
   }
-  
+  std::cout << min_seed << " is the seed of " << min << std::endl;
   return min;
 }
 
-int part2(std::string content) {
+long int part2(std::string content) {
+  int firstLineLength = content.find('\n');
+  //getting seeds first
+  std::vector<long int> seeds = split_and_parse(content.substr(7, firstLineLength-7));
 
-  return 0;
+  content = content.substr(firstLineLength+2, content.size()-firstLineLength-2); //removing seeds from content !
+  
+  //First, we have to read all ranges from data.
+  std::vector<std::vector<range>> ranges;
+  std::vector<std::string> lines = split(content, '\n');
+
+  int currentType = 0;
+  bool justUpdated = false;
+  ranges.push_back(std::vector<range>());
+  
+  for (long unsigned int i = 0; i < lines.size(); i ++)
+  {
+    std::vector<long int> numbers = split_and_parse(lines[i]);
+    if (numbers.size() == 0) {
+      if (justUpdated) {
+        continue;
+      }
+      currentType += 1;
+      justUpdated = true;
+      ranges.push_back(std::vector<range>());
+      continue;
+    }
+    justUpdated = false;
+    range currentRange{numbers[0], numbers[1], numbers[2]};
+    ranges[currentType].push_back(currentRange);
+  }
+
+  //iterating FROM locations to seeds
+
+  
+  int locationsIndex = ranges.size()-1;
+  std::sort(ranges[locationsIndex].begin(), ranges[locationsIndex].end()); //sorting locations ranges from lowest to highest.
+
+  int loc = 0;
+  while (true) 
+  {
+  
+    long int value = loc;
+    for (long int j = locationsIndex; j >= 0; j--) {        
+      for (lint l = 0; l < ranges[j].size(); l ++) {
+        range currentSubRange = ranges[j][l];
+        if (value >= currentSubRange.destination_start && value < currentSubRange.destination_start+currentSubRange.length) {
+            value = (currentSubRange.source_start+(value - currentSubRange.destination_start));
+            break;
+        }
+      }
+    }
+
+    for (lint a = 0; a < seeds.size(); a+=2) {
+      if (value >= seeds[a] && value < seeds[a]+seeds[a+1]) {
+        std::cout << "just found seed " << value << " that gets position: " << loc << std::endl;
+        return loc;
+      }
+    }
+    loc ++;
+  }
+ 
+  
+  return -1;
 }
 int main() {
-  int total = part1(slurp("data-full.txt"));
+  long int total = part1(slurp("data-full.txt"));
   std::cout << "Total part 1: " << total << std::endl;;
-  int total2 = part2(slurp("data-full.txt"));
+  long int total2 = part2(slurp("data-full.txt"));
   std::cout << "Total part 2: " << total2 << std::endl; 
   return 0;
 }
 
 
  
+
+
